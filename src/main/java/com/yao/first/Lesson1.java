@@ -46,7 +46,9 @@ public class Lesson1 {
 //        testMerge();
 //        testReduce();
 
-        testScan();
+//        testScan();
+
+        testWindow();
 
     }
 
@@ -542,8 +544,23 @@ public class Lesson1 {
         });
     }
 
+    /**
+     * 类似于buffer，按照步长跟数量将一个分成多个
+     */
     public static void testWindow(){
 
+        Observable.just(1,2,3,4,5,6,7,8,9).window(2,3).subscribe(new Consumer<Observable<Integer>>() {
+            @Override
+            public void accept(Observable<Integer> integerObservable) throws Exception {
+                System.out.println(integerObservable.toList());
+                integerObservable.subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        System.out.println(integer);
+                    }
+                });
+            }
+        });
 
     }
 
