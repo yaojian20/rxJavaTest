@@ -33,7 +33,7 @@ public class Lesson1 {
 
 //        testBuffer();
 
-//        testTimer();
+        testTimer();
 //        testInterval();
 //        testDoOnNext();
 //        testSkip();
@@ -48,7 +48,7 @@ public class Lesson1 {
 
 //        testScan();
 
-        testWindow();
+//        testWindow();
 
     }
 
@@ -302,10 +302,12 @@ public class Lesson1 {
      * 延时操作
      */
     public static void testTimer(){
+        System.out.println(Thread.currentThread().getName());
         System.out.println(new Date());
         Observable.just(1,2,3).timer(1,TimeUnit.SECONDS).subscribeOn(Schedulers.io()).subscribe(new Consumer<Long>() {
             @Override
             public void accept(Long aLong) throws Exception {
+                System.out.println(Thread.currentThread().getName());
                 System.out.println(new Date());
             }
         });
