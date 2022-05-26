@@ -78,6 +78,10 @@ public class SuperHeroesService {
         new SuperHeroesService(true).start().blockingAwait();
     }
 
+    public static void run(boolean verbose) {
+        new SuperHeroesService(verbose).start().blockingAwait();
+    }
+
     public static WebClient client() {
         return WebClient.create(vertx,
                 new WebClientOptions().setDefaultPort(8080).setDefaultHost("localhost")
