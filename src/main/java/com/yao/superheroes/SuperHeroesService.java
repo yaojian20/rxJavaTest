@@ -34,6 +34,11 @@ public class SuperHeroesService {
         Router router = Router.router(vertx);
         //绑定路由地址及处理方法
         router.route("/heroes").handler(this::getAllHeroes);
+        router.route("/villains").handler(this::getAllVillains);
+        router.route("/heroes/random").handler(this::getRandomHero);
+        //要放在/heroes/:id上面，不然会先根据/heroes/:id路由
+        router.route("/villains/random").handler(this::getRandomVillain);
+        router.route("/heroes/:id").handler(this::getHeroById);
 
         //读取文件
         return vertx.fileSystem().rxReadFile("src/main/resources/characters.json")
@@ -61,6 +66,13 @@ public class SuperHeroesService {
                             JsonObject::mergeIn)
                     .encodePrettily());
     }
+    public void getAllVillains(RoutingContext routingContext){
+            routingContext.response().end(villains.values().stream()
+                    .collect(JsonObject::new,
+                            (json, superStuff) -> json.put(Integer.toString(superStuff.getId()), superStuff.getName()),
+                            JsonObject::mergeIn)
+                    .encodePrettily());
+    }
 
     public static void run() {
         new SuperHeroesService(true).start().blockingAwait();
@@ -70,6 +82,59 @@ public class SuperHeroesService {
         return WebClient.create(vertx,
                 new WebClientOptions().setDefaultPort(8080).setDefaultHost("localhost")
         );
+    }
+
+    private static boolean contains(String name, JsonObject json) {
+        return json.stream().anyMatch(e -> e.getValue().toString().equalsIgnoreCase(name));
+    }
+
+    /**
+     * 根据id寻找英雄
+     * @param routingContext
+     */
+    private void getHeroById(RoutingContext routingContext){
+        getById(routingContext, heroes, true);
+    }
+
+    /**
+     * 根据id寻找人物
+     * @param routingContext
+     * @param characterMap
+     */
+    private void getById(RoutingContext routingContext, Map<Integer,Character> characterMap, boolean isHero){
+        String id = routingContext.pathParam("id");
+        String characterMsg = isHero ? "hero" : "villain";
+        try {
+            Integer value = Integer.valueOf(id);
+            Character character = characterMap.get(value);
+            if (character != null){
+                routingContext.response().end(character.toJson().encodePrettily());
+            } else {
+                routingContext.response().setStatusCode(400).end("Unknown " + characterMsg + " : " + id);
+            }
+        } catch (Exception e){
+            routingContext.response().setStatusCode(400).end("Unknown " + characterMsg + " : " + id);
+        }
+    }
+
+    private void getRandomHero(RoutingContext rc) {
+        List<Character> h = new ArrayList<>(heroes.values());
+        int index = random.nextInt(h.size());
+        Character hero = h.get(index);
+        if (verbose) {
+            System.out.println("Selected hero " + hero);
+        }
+        rc.response().end(hero.toJson().encodePrettily());
+    }
+
+    private void getRandomVillain(RoutingContext rc) {
+        List<Character> h = new ArrayList<>(villains.values());
+        int index = random.nextInt(h.size());
+        Character villain = h.get(index);
+        if (verbose) {
+            System.out.println("Selected villain " + villain);
+        }
+        rc.response().end(villain.toJson().encodePrettily());
     }
 
 }
